@@ -1,15 +1,17 @@
 import express, { Request, Response } from "express";
-import { createUser, getUserByEmail } from "../models/User";
+import {
+  createUser,
+  getUserByEmail,
+  getUserBySessionToken,
+} from "../models/User";
 import bcrypt from "bcrypt";
 import { authenticate } from "../utils/auth";
-
+const tokenMaxAge = 60 * 60 * 24 * 3;
 export const register = async (req: Request, res: Response) => {
   try {
     const { email, password, username, phone } = req.body;
     if (!email || !password || !username) {
-      //에러 메세지 작성해서 보내주면 좋을듯
-      console.log("dont have ", email, password, username, phone);
-      return res.sendStatus(400);
+      return res.status(400).json({ error: "wrong register format" });
     }
 
     const existingUser = await getUserByEmail(email);
@@ -22,6 +24,7 @@ export const register = async (req: Request, res: Response) => {
     const user = await createUser({
       email,
       username,
+      phone,
       authentication: {
         password: hashedPassword,
       },
@@ -30,5 +33,83 @@ export const register = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("register error", error);
     return res.sendStatus(401);
+  }
+};
+
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.sendStatus(400);
+    }
+    const user = await getUserByEmail(email).select("+authentication.password");
+    console.log("user:", user);
+    if (!user) {
+      return res.sendStatus(400);
+    }
+    if (!user.authentication) {
+      throw new Error("User authentication not found");
+    }
+    console.log("pw:", user.authentication);
+    const isMatch = await bcrypt.compare(
+      password,
+      user.authentication.password
+    );
+    if (!isMatch) {
+      throw Error("incorrect user info");
+    }
+
+    const salt = await bcrypt.genSalt();
+    user.authentication.sessionToken = await bcrypt.hash(
+      user._id.toString(),
+      salt
+    );
+    await user.save();
+
+    res.cookie("AUTH-TOKEN", user.authentication.sessionToken, {
+      httpOnly: true,
+      maxAge: tokenMaxAge * 1000,
+      secure: false,
+      sameSite: false,
+    });
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.log(error);
+    return res.sendStatus(400);
+  }
+};
+
+export const isLogin = async (req: Request, res: Response) => {
+  try {
+    //AUTH-TOKEN 쿠키를 확인하고 없으면 fail
+    //있으면  getUserBySessionToken 으로 유저 찾아 정보보내주기
+    const token = req.cookies["AUTH-TOKEN"];
+    if (!token) {
+      throw Error("no token");
+    }
+    const user = await getUserBySessionToken(token);
+    if (!user) {
+      throw Error("no token");
+    }
+    return res.status(200).json(user);
+  } catch (error) {
+    console.log(error);
+    return res.sendStatus(400);
+  }
+};
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    res.cookie("AUTH-TOKEN", "", {
+      httpOnly: true,
+      maxAge: tokenMaxAge * 1000,
+      secure: false,
+      sameSite: false,
+    });
+    res.status(204).json({ state: "Success" });
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(400);
   }
 };

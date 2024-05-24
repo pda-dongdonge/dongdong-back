@@ -1,7 +1,15 @@
 import express, { NextFunction, Request, Response } from "express";
-import { register } from "../controllers/authentication";
+import {
+  register,
+  login,
+  isLogin,
+  logout,
+} from "../controllers/authentication";
 import { createToken, verifyToken } from "../utils/auth";
 
 export default (router: express.Router) => {
   router.post("/auth/register", register);
+  router.post("/auth/login", login);
+  router.get("/auth/islogin", isLogin);
+  router.get("/auth/logout", logout);
 };

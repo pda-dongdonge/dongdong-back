@@ -15,7 +15,17 @@ const userSchema = new Schema({
     required: true,
     unique: true,
     lowercase: true,
-    validate: [isEmail, " ."],
+    // validate: [isEmail, " ."],
+    //TODO: validate 문서읽어보고 작성
+    validate: [
+      (value: string) => {
+        if (!value) {
+          return false;
+        }
+        return true;
+      },
+      "Email이 입력되어야합니다.",
+    ],
   },
   username: {
     type: String,
@@ -37,7 +47,12 @@ export const getUserBySessionToken = (sessionToken: string) =>
   UserModel.findOne({ "authentication.sessionToken": sessionToken });
 export const getUserById = (id: string) => UserModel.findById(id);
 export const createUser = (values: Record<string, any>) =>
-  new UserModel(values).save().then((user) => user.toObject());
+  new UserModel(values)
+    .save()
+    .then((user) => user.toObject())
+    .catch((err) => {
+      return err;
+    });
 export const deleteUserById = (id: string) =>
   UserModel.findOneAndDelete({ _id: id });
 export const updateUserById = (id: string, values: Record<string, any>) =>
