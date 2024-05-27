@@ -17,22 +17,21 @@ export const addNewBucket_c = async (req: Request, res: Response, next: NextFunc
         })
     }
     try {
-        UserModel.findOne({_id:maker}).then((user)=>{
-            BucketModel.create({
+        const user = await UserModel.findOne({ _id: maker });
+            if (!user) {
+                return res.status(404).json({ message: "유저를 찾을 수 없습니다." });
+            }
+    
+            const newBucket = {
                 title: title,
                 contents: contents,
-                maker: user
-            })
-            .then((result)=>{
-                res.json(result);
-            })
-            .catch(e=>{
-                res.json(e);
-            })
-        })
-        // const result = await addNewBucket({ title, contents, maker });
-        // console.log(result);
-        // return res.json(result);
+                maker: user._id,
+                bucketItemList: [],
+                likeUser: []
+            };
+    
+            const result = await addNewBucket(newBucket);
+            return res.json(result);
     } catch (error) {
         console.error("Error creating bucket:", error);
         return res.status(500).json({ message: "서버 에러" });

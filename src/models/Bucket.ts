@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 
 const bucketSchema = new Schema({
     title: {
@@ -29,19 +29,28 @@ const bucketSchema = new Schema({
 export interface Bucket {
     title: string;
     contents: string;
-    maker: string;
-    // bucketItemList: string[];
-    // likeUser: string[];
+    maker: Types.ObjectId;
+    bucketItemList: Types.ObjectId[];
+    likeUser: Types.ObjectId[];
 }
 
 export const BucketModel = mongoose.model("bucket", bucketSchema);
 
 export const getBuckets = () => BucketModel.find();
 
-export const addNewBucket = (bucket: Bucket) => {
-    BucketModel.create({
+export const addNewBucket = async (bucket: Bucket) => {
+    const newBucket = new BucketModel({
         title: bucket.title,
         contents: bucket.contents,
         maker: bucket.maker,
+        bucketItemList: bucket.bucketItemList || [],  // Optional, initialize if not provided
+        likeUser: bucket.likeUser || []              // Optional, initialize if not provided
     });
+    try {
+        const savedBucket = await newBucket.save();
+        return savedBucket;
+    } catch (error) {
+        console.error("Error creating bucket:", error);
+        throw error;
+    }
 }
