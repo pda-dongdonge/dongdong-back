@@ -25,7 +25,7 @@ export interface BucketItem {
     url: string,
     urlTitle: String,
     urlContent: String, 
-    impUrl?: String
+    imgUrl?: String
 }
 
 export const BucketItemModel = mongoose.model("bucketItem", bucketItemSchema);
@@ -46,7 +46,7 @@ export const addNewBucketItem = async (bucketItem: BucketItem) => {
         url: bucketItem.url,
         urlTitle: bucketItem.urlTitle,
         urlContent: bucketItem.urlContent,
-        imgUrl: bucketItem.impUrl            // Optional, initialize if not provided
+        imgUrl: bucketItem.imgUrl            // Optional, initialize if not provided
     });
     try {
         const savedBucketItem = await newBucketItem.save();
