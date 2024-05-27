@@ -25,35 +25,27 @@ export interface BucketItem {
     url: string,
     urlTitle: String,
     urlContent: String, 
-    impUrl?: String
+    imgUrl?: String
 }
 
 export const BucketItemModel = mongoose.model("bucketItem", bucketItemSchema);
 
 export const getBucketItem= () => BucketItemModel.find();
 
-// export const addNewBucketItem = (bucketItem: BucketItem) => {
-//     BucketItemModel.create({
-//         url: bucketItem.url,
-//         urlTitle: bucketItem.urlTitle,
-//         urlContent: bucketItem.urlContent,
-//         imgUrl: bucketItem.impUrl
-//     });
-// }
-
 export const addNewBucketItem = async (bucketItem: BucketItem) => {
     const newBucketItem = new BucketItemModel({
         url: bucketItem.url,
         urlTitle: bucketItem.urlTitle,
         urlContent: bucketItem.urlContent,
-        imgUrl: bucketItem.impUrl            // Optional, initialize if not provided
+        imgUrl: bucketItem.imgUrl            // Optional, initialize if not provided
     });
     try {
         const savedBucketItem = await newBucketItem.save();
         return savedBucketItem;
-    } catch (error) {
+    } catch (error){////                                                                                 rror) {
         console.error("Error creating bucket:", error);
         throw error;
+
     }
 }
 
