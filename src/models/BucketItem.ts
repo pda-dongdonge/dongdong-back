@@ -32,15 +32,6 @@ export const BucketItemModel = mongoose.model("bucketItem", bucketItemSchema);
 
 export const getBucketItem= () => BucketItemModel.find();
 
-// export const addNewBucketItem = (bucketItem: BucketItem) => {
-//     BucketItemModel.create({
-//         url: bucketItem.url,
-//         urlTitle: bucketItem.urlTitle,
-//         urlContent: bucketItem.urlContent,
-//         imgUrl: bucketItem.impUrl
-//     });
-// }
-
 export const addNewBucketItem = async (bucketItem: BucketItem) => {
     const newBucketItem = new BucketItemModel({
         url: bucketItem.url,
@@ -51,9 +42,10 @@ export const addNewBucketItem = async (bucketItem: BucketItem) => {
     try {
         const savedBucketItem = await newBucketItem.save();
         return savedBucketItem;
-    } catch (error) {
+    } catch (error){////                                                                                 rror) {
         console.error("Error creating bucket:", error);
         throw error;
+
     }
 }
 

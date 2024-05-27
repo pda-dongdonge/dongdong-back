@@ -73,7 +73,12 @@ export const addNewBucketItem_c = async (req: Request, res: Response, next: Next
       
   
           const result = await addNewBucketItem(newBucketItem);
+          bucket.bucketItemList.push(result._id);
+          await bucket.save();
+          
           return res.json(result);
+
+
   } catch (error) {
       console.error("Error creating bucket:", error);
       return res.status(500).json({ message: "서버 에러" });
