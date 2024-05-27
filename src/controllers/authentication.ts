@@ -6,6 +6,7 @@ import {
 } from "../models/User";
 import bcrypt from "bcrypt";
 import { authenticate } from "../utils/auth";
+
 const tokenMaxAge = 60 * 60 * 24 * 3;
 export const register = async (req: Request, res: Response) => {
   try {
@@ -36,6 +37,20 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
+export const emailVerifyCheck = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    const existingUser = await getUserByEmail(email);
+    if (existingUser) {
+      return res.status(200).json({ email: email, verify: true });
+    } else {
+      return res.status(200).json({ email: email, verify: false });
+    }
+  } catch (error) {
+    console.log("email verify check error", error);
+    return res.sendStatus(401);
+  }
+};
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
