@@ -42,9 +42,9 @@ export const emailVerifyCheck = async (req: Request, res: Response) => {
     const { email } = req.body;
     const existingUser = await getUserByEmail(email);
     if (existingUser) {
-      return res.status(200).json({ email: email, verify: true });
-    } else {
       return res.status(200).json({ email: email, verify: false });
+    } else {
+      return res.status(200).json({ email: email, verify: true });
     }
   } catch (error) {
     console.log("email verify check error", error);
