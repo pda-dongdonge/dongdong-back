@@ -75,10 +75,20 @@ export const getBucketListUrl = async (req: Request, res: Response) => {
 
 export const getHotBucket = async (req: Request, res: Response) => {
     try {
-        const result = await BucketModel.find().sort({ "likeUser": -1 }).exec();
+        const result = await BucketModel.aggregate([
+            {
+                $addFields: {
+                    likeUserCount: { $size: { $ifNull: ["$likeUser", []] } }
+                }
+            },
+            {
+                $sort: { likeUserCount: -1 }
+            }
+        ]).exec();
         res.json(result);
     } catch (error) {
         console.error("Error:", error);
         res.status(500).send("Internal Server Error");
     }
 }
+
