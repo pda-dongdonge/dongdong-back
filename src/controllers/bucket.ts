@@ -1,7 +1,7 @@
 import express, {Request, Response, NextFunction} from "express";
 import { getBuckets, addNewBucket } from "../models/Bucket";
 import { Bucket } from "../models/Bucket";
-import { UserModel } from "../models/User";
+
 import { BucketModel } from "../models/Bucket";
 import { getUserBySessionToken } from "../models/User";
 import { getBucketDetail_d } from "../dao/bucket";
@@ -46,6 +46,7 @@ export const getBucket = async (req: Request, res: Response) => {
     try {
         const result = await BucketModel.find();
         res.json(result);
+        
     } catch (error) {
         console.error("Error:", error);
         res.status(500).send("Internal Server Error");
@@ -125,3 +126,25 @@ export const getBucketDetail_c = async (req:Request, res: Response, next: NextFu
         })
     }
 }
+export const getUserBuckets = async (req: Request, res: Response) => {
+
+    // console.log(req.body);
+    // const token = req.cookies["AUTH-TOKEN"];
+    // if (!token) {
+    //   throw Error("no token");
+    // }
+    // const user = await getUserBySessionToken(token);
+    //유저의 버킷리스트 불러오는 로직 추가
+    try {
+        const result = await getBuckets();
+        res.json(result);
+    } catch (error) {
+        console.error("버킷을 가져오는 중 오류 발생:");
+        res.status(500).send("서버 내부 오류");
+    }
+}
+
+
+
+
+

@@ -35,9 +35,18 @@ export interface Bucket {
 }
 
 
-export const BucketModel = mongoose.model("bucket", bucketSchema);
+export const BucketModel = mongoose.model("Bucket", bucketSchema);
 
-export const getBuckets = () => BucketModel.find();
+export const getBuckets = async () => {
+    try {
+        const buckets = await BucketModel.find();
+        console.log(buckets);
+        return buckets;
+    } catch (error) {
+        console.error("Error fetching buckets:", error);
+        throw error;
+    }
+};
 
 export const addNewBucket = async (bucket: Bucket) => {
     const newBucket = new BucketModel({
