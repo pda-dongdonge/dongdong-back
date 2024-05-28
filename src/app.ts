@@ -7,7 +7,7 @@ import path from "path";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
 import dotenv from "dotenv";
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 import session from "express-session";
 import router from "./routes";
 dotenv.config();
@@ -23,7 +23,7 @@ mongoose
     console.log("mongo Connected Success");
   })
   .catch((err) => console.log(err));
-
+console.log(mongoose.models)
 const app = express();
 const PORT = process.env.PORT || 1234;
 //우선 우리 프론트 포트만 허용했어용
@@ -51,7 +51,7 @@ app.listen(PORT, () => {
   console.log(`
   ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
   ┃   Server listening on port: ${PORT}    ┃
-  ┃     http://localhost:${PORT}/       ┃
+  ┃     http://localhost:${PORT}/          ┃
   ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
   `);
 });

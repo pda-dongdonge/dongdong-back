@@ -25,10 +25,10 @@ export interface BucketItem {
     url: string,
     urlTitle: String,
     urlContent: String, 
-    imgUrl?: String
+    imgUrl?: string
 }
 
-export const BucketItemModel = mongoose.model("bucketItem", bucketItemSchema);
+export const BucketItemModel = mongoose.model("BucketItem", bucketItemSchema);
 
 export const getBucketItem= () => BucketItemModel.find();
 
