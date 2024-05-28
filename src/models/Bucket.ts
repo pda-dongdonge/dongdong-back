@@ -12,7 +12,7 @@ const bucketSchema = new Schema({
     maker: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: "UserProfile",
+        ref: "user",
     },
     bucketItemList: {
         type: [mongoose.Schema.Types.ObjectId],
@@ -22,7 +22,7 @@ const bucketSchema = new Schema({
     likeUser: {
         type: [mongoose.Schema.Types.ObjectId],
         default: [],
-        ref: "UserProfile",
+        ref: "user",
     }
 });
 
