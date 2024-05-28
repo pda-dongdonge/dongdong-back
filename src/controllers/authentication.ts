@@ -1,11 +1,10 @@
-import express, { Request, Response } from "express";
+import { Request, Response } from "express";
 import {
   createUser,
   getUserByEmail,
   getUserBySessionToken,
 } from "../models/User";
 import bcrypt from "bcrypt";
-import { authenticate } from "../utils/auth";
 
 const tokenMaxAge = 60 * 60 * 24 * 3;
 export const register = async (req: Request, res: Response) => {
