@@ -3,6 +3,7 @@ import { healthCheck, addNewBucket_c, getBucketListUrl, getBucket, getBucketDeta
 import { BucketModel } from "../models/Bucket";
 import { BucketItemModel } from "../models/BucketItem";
 
+import { isLogin } from "../controllers/authentication";
 
 export default (router: Router) => {
     //router.get("/bucket", healthCheck);
