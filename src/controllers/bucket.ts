@@ -3,29 +3,32 @@ import { getBuckets, addNewBucket } from "../models/Bucket";
 import { Bucket } from "../models/Bucket";
 import { UserModel } from "../models/User";
 import { BucketModel } from "../models/Bucket";
-
+import { getUserBySessionToken } from "../models/User";
 export const healthCheck = (req: Request, res: Response) => {
     return res.send("healthy");
 }
 
 export const addNewBucket_c = async (req: Request, res: Response, next: NextFunction) => {
     console.log(req.body);
-    const {title, contents, maker} = req.body;
-    if(!title || !contents || !maker) {
+    const token = req.cookies["AUTH-TOKEN"];
+    if (!token) {
+      throw Error("no token");
+    }
+    const user = await getUserBySessionToken(token);
+    const {title, contents} = req.body;
+    if(!title || !contents ) {
         res.sendStatus(400).json({
             message: "잘못된 입력값..(이런식으로)"
         })
     }
     try {
-        const user = await UserModel.findOne({ _id: maker });
             if (!user) {
                 return res.status(404).json({ message: "유저를 찾을 수 없습니다." });
             }
-    
             const newBucket = {
                 title: title,
                 contents: contents,
-                maker: user._id,
+                maker:user._id,
                 bucketItemList: [],
                 likeUser: []
             };
