@@ -44,7 +44,7 @@ export const addNewBucket_c = async (req: Request, res: Response, next: NextFunc
 
 export const getBucket = async (req: Request, res: Response) => {
     try {
-        const result = await BucketModel.find();
+        const result = await BucketModel.find().populate('maker','username').exec();
         res.json(result);
         
     } catch (error) {
@@ -91,7 +91,9 @@ export const getHotBucket = async (req: Request, res: Response) => {
                 $sort: { likeUserCount: -1 }
             }
         ]).exec();
-        res.json(result);
+        const populatedResult = await BucketModel.populate(result, { path: 'maker', select: 'username' });
+
+        res.json(populatedResult);
     } catch (error) {
         console.error("Error:", error);
         res.status(500).send("Internal Server Error");
@@ -126,6 +128,22 @@ export const getBucketDetail_c = async (req:Request, res: Response, next: NextFu
         })
     }
 }
+export const getBucketUserList = async (req: Request, res: Response) => {
+    const { bucketId } = req.params;
+
+    try {
+        const result = await BucketModel.findById({_id: bucketId}).populate('maker').exec();
+        if (!result) {
+            return res.status(404).send('Bucket not found');
+        }
+        res.json(result);
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).send('Internal Server Error');
+    }
+};
+
 export const getUserBuckets = async (req: Request, res: Response) => {
 
     // console.log(req.body);
@@ -143,8 +161,3 @@ export const getUserBuckets = async (req: Request, res: Response) => {
         res.status(500).send("서버 내부 오류");
     }
 }
-
-
-
-
-
