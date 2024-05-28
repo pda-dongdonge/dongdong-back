@@ -21,6 +21,10 @@ const userSchema = new Schema({
     required: true,
     ref: "bucket",
   },
+  username: {
+    type: String,
+    required: true,
+  },
 });
 
 export const UserProfileModel = mongoose.model("UserProfile", userSchema);
@@ -37,5 +41,7 @@ export const createUserProfile = (values: Record<string, any>) =>
     });
 export const deleteUserById = (userId: string) =>
   UserProfileModel.findOneAndDelete({ userId: userId });
-export const updateUserById = (userId: string, values: Record<string, any>) =>
-  UserProfileModel.findByIdAndUpdate(userId, values);
+export const updateUserProfileById = (
+  userId: string,
+  values: Record<string, any>
+) => UserProfileModel.findByIdAndUpdate(userId, values);
