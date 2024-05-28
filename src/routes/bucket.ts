@@ -1,7 +1,8 @@
 import express, { Router, Request, Response } from "express";
-import { healthCheck, addNewBucket_c } from "../controllers/bucket";
+import { healthCheck, addNewBucket_c, getBucketDetail_c } from "../controllers/bucket";
 
 import { BucketModel } from "../models/Bucket";
+import { BucketItemModel } from "../models/BucketItem";
 
 
 export default (router: Router) => {
@@ -33,4 +34,6 @@ export default (router: Router) => {
             res.status(500).send('Internal Server Error');
         }
     });
+
+    router.get("/bucket/detail/:bucketId", getBucketDetail_c);
 };
