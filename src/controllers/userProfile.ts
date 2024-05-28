@@ -20,7 +20,11 @@ export const getUserProfile = async (req: Request, res: Response) => {
     }
 
     const response = {
-      ...userProfile,
+      userId: userProfile.userId,
+      followers: userProfile.followers,
+      following: userProfile.following,
+      likedBucket: userProfile.likedBucket,
+      username: userProfile.username,
       followersCount: userProfile.followers.length,
       followingCount: userProfile.following.length,
       isFollow,
