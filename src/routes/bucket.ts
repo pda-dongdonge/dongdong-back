@@ -1,6 +1,5 @@
 import express, { Router, Request, Response } from "express";
 import { healthCheck, addNewBucket_c, getBucketDetail_c } from "../controllers/bucket";
-
 import { BucketModel } from "../models/Bucket";
 import { BucketItemModel } from "../models/BucketItem";
 
