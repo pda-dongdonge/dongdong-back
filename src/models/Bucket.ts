@@ -34,6 +34,7 @@ export interface Bucket {
     likeUser: Types.ObjectId[];
 }
 
+
 export const BucketModel = mongoose.model("bucket", bucketSchema);
 
 export const getBuckets = () => BucketModel.find();

@@ -38,6 +38,17 @@ export const addNewBucket_c = async (req: Request, res: Response, next: NextFunc
     }
 }
 
+export const getBucket = async (req: Request, res: Response) => {
+    try {
+        const result = await BucketModel.find();
+        res.json(result);
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).send("Internal Server Error");
+    }
+}
+
+
 
 export const getBucketListUrl = async (req: Request, res: Response) => {
     const { bucketId } = req.params;
@@ -45,14 +56,15 @@ export const getBucketListUrl = async (req: Request, res: Response) => {
     try {
         const result = await BucketModel.findOne({_id: bucketId}).populate(
             //path: 
-            'bucketItemList', 'imgUrl'
+            'bucketItemList',
+            'imgUrl'
             //select: 'imgUrl' // imgUrl 필드만 선택
         )
         //.exec();
         if (!result) {
             return res.status(404).send('Bucket not found');
         }
-        res.json(result);
+        res.json(result.bucketItemList);
 
     } catch (error) {
         console.error("Error:", error);
