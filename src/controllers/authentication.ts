@@ -1,3 +1,4 @@
+import { createUserProfile } from "./../models/UserProfile";
 import { Request, Response } from "express";
 import {
   createUser,
@@ -28,6 +29,13 @@ export const register = async (req: Request, res: Response) => {
       authentication: {
         password: hashedPassword,
       },
+    });
+    const userProfile = await createUserProfile({
+      userId: user._id,
+      followers: [],
+      following: [],
+      likedBucket: [],
+      username: user.username,
     });
     return res.status(200).json(user);
   } catch (error) {
