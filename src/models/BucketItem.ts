@@ -28,7 +28,7 @@ export interface BucketItem {
     imgUrl?: String
 }
 
-export const BucketItemModel = mongoose.model("bucketItem", bucketItemSchema);
+export const BucketItemModel = mongoose.model("BucketItem", bucketItemSchema);
 
 export const getBucketItem= () => BucketItemModel.find();
 
