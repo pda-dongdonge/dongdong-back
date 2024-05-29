@@ -9,6 +9,7 @@ import {
   getMakerBucketList,
   getBucketDetail_c,
   getBucketUserList,
+  getBucketListFollowing,
 } from "../controllers/bucket";
 
 import { BucketModel } from "../models/Bucket";
@@ -24,4 +25,5 @@ export default (router: Router) => {
   router.get("/hotbucket", getHotBucket);
   router.get("/bucket/detail/:bucketId", getBucketDetail_c);
   router.get("/bucket/:userId", getMakerBucketList);
+  router.get("/bucket/feed/:userId", getBucketListFollowing);
 };

@@ -55,3 +55,19 @@ export const addNewBucket = async (bucket: Bucket) => {
     throw error;
   }
 };
+export const getBucketListsByFollowingUserIds = async (
+  followingUserIds: string[]
+) => {
+  try {
+    const bucketLists = await BucketModel.find({
+      maker: { $in: followingUserIds },
+    });
+    return bucketLists;
+  } catch (error) {
+    console.error(
+      "Error retrieving bucket lists by following user IDs:",
+      error
+    );
+    return []; // 에러 발생 시 빈 배열 반환
+  }
+};

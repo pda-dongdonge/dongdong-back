@@ -1,13 +1,15 @@
-import express, { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import {
-  getBuckets,
+  BucketModel,
   addNewBucket,
   getBucketListByMaker,
+  getBucketListsByFollowingUserIds,
 } from "../models/Bucket";
-import { Bucket } from "../models/Bucket";
-import { UserModel } from "../models/User";
-import { BucketModel } from "../models/Bucket";
-import { getUserBySessionToken } from "../models/User";
+import { UserModel, getUserBySessionToken } from "../models/User";
+import {
+  getUserProfileById,
+  updateUserProfileById,
+} from "../models/UserProfile";
 import { getBucketDetail_d } from "../dao/bucket";
 export const healthCheck = (req: Request, res: Response) => {
   return res.send("healthy");
@@ -166,5 +168,24 @@ export const getMakerBucketList = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("Internal Server Error");
+  }
+};
+
+export const getBucketListFollowing = async (req: Request, res: Response) => {
+  const { userId } = req.params;
+  try {
+    //해당 유저의 팔로잉 조회
+    const user = await getUserProfileById(userId);
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+    //팔로잉 한 유저들의 버켓 조회
+    const bucketList = await getBucketListsByFollowingUserIds(
+      user.following.map(String)
+    );
+    res.json(bucketList);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).send("fail to get bucket List you follow");
   }
 };
