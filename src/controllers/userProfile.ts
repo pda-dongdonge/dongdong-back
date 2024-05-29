@@ -1,9 +1,12 @@
 import { Request, Response } from "express";
 import { getUserById, getUserBySessionToken } from "../models/User";
+
 import {
+  UserProfileModel,
   getUserProfileById,
   updateUserProfileById,
 } from "../models/UserProfile";
+import { BucketModel } from "../models/Bucket";
 //유저 아이디 받아서 해당 유저 정보 노출 isFollow: true / false (비로그인유저는 false)
 export const getUserProfile = async (req: Request, res: Response) => {
   try {
@@ -20,7 +23,11 @@ export const getUserProfile = async (req: Request, res: Response) => {
     }
 
     const response = {
-      ...userProfile,
+      userId: userProfile.userId,
+      followers: userProfile.followers,
+      following: userProfile.following,
+      likedBucket: userProfile.likedBucket,
+      username: userProfile.username,
       followersCount: userProfile.followers.length,
       followingCount: userProfile.following.length,
       isFollow,
@@ -39,6 +46,7 @@ export const follow = async (req: Request, res: Response) => {
     const { follow } = req.body; //
     const userProfile = await getUserProfileById(userId);
     if (!userProfile) throw new Error();
+
     const token = req.cookies["AUTH-TOKEN"];
     if (!token) {
       throw new Error(`no token`);
@@ -47,18 +55,75 @@ export const follow = async (req: Request, res: Response) => {
     if (!loginUser) {
       throw new Error(`no logined User`);
     }
-
-    const newFollowers = [...userProfile?.followers];
-    if (follow) {
-      newFollowers.push(loginUser._id);
-    } else {
-      newFollowers.filter((el) => el !== loginUser._id);
+    const loginUserProfile = await getUserProfileById(loginUser._id.toString());
+    if (!loginUserProfile) {
+      throw new Error(`no logined User`);
     }
 
-    await updateUserProfileById(userId, { follows: newFollowers });
-    res.status(200).json({ state: "success" });
+    // follow & unfollow
+    let updatedProfile;
+    if (follow) {
+      console.log(`${userProfile._id} to ${loginUser._id}`);
+      updatedProfile = await updateUserProfileById(userProfile._id, {
+        $push: { followers: loginUser._id },
+      });
+      await updateUserProfileById(loginUserProfile._id, {
+        $push: { following: userId },
+      });
+    } else {
+      updatedProfile = await updateUserProfileById(userProfile._id, {
+        $pull: { followers: loginUser._id },
+      });
+      await updateUserProfileById(loginUserProfile._id, {
+        $pull: { following: userId },
+      });
+    }
+
+    if (!updatedProfile) throw Error("fail follow ");
+    const response = {
+      userId: updatedProfile.userId,
+      followers: updatedProfile.followers,
+      following: updatedProfile.following,
+      likedBucket: updatedProfile.likedBucket,
+      username: updatedProfile.username,
+      followersCount: updatedProfile.followers.length,
+      followingCount: updatedProfile.following.length,
+      isFollow: follow,
+    };
+    res.status(200).json(response);
   } catch (err) {
     console.log("follow err", err);
     return res.status(400).json(err);
+  }
+};
+export const getUserLikeBucketList = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const userProfile = await getUserProfileById(userId);
+    if (!userProfile) throw new Error(`no user ${userId}`);
+
+    const token = req.cookies["AUTH-TOKEN"];
+
+    const likedBucketIds = userProfile.likedBucket;
+
+    const bucketDetailsPromises = likedBucketIds.map((bucketId) =>
+      BucketModel.findById(bucketId).populate("maker").exec()
+    );
+
+    const bucketDetails = await Promise.all(bucketDetailsPromises);
+
+    // Filter out null results in case some buckets are not found
+    const validBucketDetails = bucketDetails.filter(
+      (bucket) => bucket !== null
+    );
+
+    if (validBucketDetails.length === 0) {
+      return res.status(404).send("No buckets found");
+    }
+
+    res.json(validBucketDetails);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).send("Internal Server Error");
   }
 };
