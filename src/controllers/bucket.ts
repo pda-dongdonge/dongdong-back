@@ -14,7 +14,7 @@ import {
 } from "../models/UserProfile";
 import { Bucket } from "../models/Bucket";
 import { Types } from "mongoose";
-import { getBucketDetail_d } from "../dao/bucket";
+import { getBucketDetail_d, bucketLike_d, checkLiked, deleteLiked } from "../dao/bucket";
 
 export const healthCheck = (req: Request, res: Response) => {
   return res.send("healthy");
@@ -230,3 +230,51 @@ export const removeBucket = async (
     return res.status(500).json({ message: "서버 에러" });
   }
 };
+
+export const bucketLike_c = async (req: Request, res: Response, next: NextFunction) => {
+    console.log(req.body);
+
+    const {bucketId} = req.body;
+    if(!bucketId) {
+        return res.status(400).json({
+            message: "bucket Id를 입력해 주세요."
+        });
+    }
+
+    // 요청할 때 받은 userToken으로 user 정보 받기
+    const token = req.cookies["AUTH-TOKEN"];
+    if(!token) {
+    //    throw Error("no token");
+        return res.status(403).json({
+            message: "로그인이 필요한 기능입니다."
+        });
+    }
+
+    const user = await getUserBySessionToken(token);
+    if (!user) {
+        // throw Error("no token");
+        return res.status(403).json({
+            message: "등록되지 않은 유저입니다."
+        });
+    }
+
+    const isLiked = await checkLiked(bucketId, user._id);
+    console.log('isLinked', isLiked);
+    
+    //이미 좋아요 한 경우 체크 -> 삭제
+    if(isLiked) {
+        // console.log(true);
+        await deleteLiked(bucketId, user._id);
+        return res.status(200).json({
+            message: "좋아요 삭제되었습니다."
+        })
+    }
+    else {
+        //좋아요 안한 경우 -> 추가
+        await bucketLike_d(bucketId, user._id);
+        return res.status(200).json({
+            message: "좋아요 추가되었습니다."
+        })
+    }
+    // return res.send("test");
+}
