@@ -25,29 +25,25 @@ export const addURLBucketItem_c= async (req: Request, res: Response, next: NextF
           return res.status(404).json({ message: "버킷을 찾을 수 없습니다." });
         }
     
-        // Create a new bucket item
-        const bucketItem = new BucketItemModel({
-          url,
-          urlTitle,
-          urlContent,
-          imgUrl
-        });
+        const newBucketItem ={
+          url:url,
+          urlTitle:urlTitle,
+          urlContent:urlContent,
+          imgUrl:imgUrl
+        };
     
-        // Save the new bucket item
-        await bucketItem.save();
-    
-        // Add the bucket item to the bucket's item list
-        bucket.bucketItemList.push(bucketItem._id);
-    
-        // Save the updated bucket
+
+        const result = await addNewBucketItem(newBucketItem);
+        bucket.bucketItemList.push(result._id);
         await bucket.save();
-    
-        // Send the created bucket item as the response
-        return res.json(bucketItem);
-      } catch (error) {
-        console.error("Error creating bucket item:", error);
+        
+        return res.json(result);
+
+
+    } catch (error) {
+        console.error("Error creating bucket:", error);
         return res.status(500).json({ message: "서버 에러" });
-      }
+    }
 }
 export const addNewBucketItem_c = async (req: Request, res: Response, next: NextFunction) => {
   console.log(req.body);

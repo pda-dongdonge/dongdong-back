@@ -1,4 +1,5 @@
 import mongoose, { Schema, Types } from "mongoose";
+import { convertToObject } from "typescript";
 
 const bucketSchema = new Schema({
     title: {
@@ -35,9 +36,20 @@ export interface Bucket {
 }
 
 
-export const BucketModel = mongoose.model("bucket", bucketSchema);
+export const BucketModel = mongoose.model("Bucket", bucketSchema);
 
-export const getBuckets = () => BucketModel.find();
+export const getBuckets = async () => {
+    try {
+        const buckets = await BucketModel.find()
+        .populate('maker','username')
+        .populate('bucketItemList','imgUrl').exec();
+        console.log(buckets);
+        return buckets;
+    } catch (error) {
+        console.error("Error fetching buckets:", error);
+        throw error;
+    }
+};
 
 export const addNewBucket = async (bucket: Bucket) => {
     const newBucket = new BucketModel({
@@ -54,4 +66,20 @@ export const addNewBucket = async (bucket: Bucket) => {
         console.error("Error creating bucket:", error);
         throw error;
     }
+}
+export const deleteBucket =async (bucketId:Types.ObjectId)=>{
+    try{
+        const deletedBucket=await BucketModel.findByIdAndDelete(bucketId);
+        if (!deletedBucket){
+            throw new Error("Bucket not found");
+
+        }
+        return deletedBucket;
+
+    }catch(error){
+        console.log("Error removing bucket:", error);
+        throw error;
+    }
+    
+
 }
