@@ -24,6 +24,6 @@ export default (router: Router) => {
   router.get("/bucket/:bucketId", getBucketListUrl);
   router.get("/hotbucket", getHotBucket);
   router.get("/bucket/detail/:bucketId", getBucketDetail_c);
-  router.get("/bucket/:userId", getMakerBucketList);
+  router.get("/bucket/user/:userId", getMakerBucketList);
   router.get("/bucket/feed/:userId", getBucketListFollowing);
 };

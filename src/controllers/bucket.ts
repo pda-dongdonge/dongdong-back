@@ -160,7 +160,7 @@ export const getBucketUserList = async (req: Request, res: Response) => {
 export const getMakerBucketList = async (req: Request, res: Response) => {
   const { userId } = req.params;
   try {
-    const result = getBucketListByMaker(userId);
+    const result = await getBucketListByMaker(userId);
     if (!result) {
       return res.status(404).send("Bucket not found");
     }
