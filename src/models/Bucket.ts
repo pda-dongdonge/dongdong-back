@@ -1,4 +1,5 @@
 import mongoose, { Schema, Types } from "mongoose";
+import { convertToObject } from "typescript";
 
 const bucketSchema = new Schema({
     title: {
@@ -54,4 +55,20 @@ export const addNewBucket = async (bucket: Bucket) => {
         console.error("Error creating bucket:", error);
         throw error;
     }
+}
+export const deleteBucket =async (bucketId:Types.ObjectId)=>{
+    try{
+        const deletedBucket=await BucketModel.findByIdAndDelete(bucketId);
+        if (!deletedBucket){
+            throw new Error("Bucket not found");
+
+        }
+        return deletedBucket;
+
+    }catch(error){
+        console.log("Error removing bucket:", error);
+        throw error;
+    }
+    
+
 }

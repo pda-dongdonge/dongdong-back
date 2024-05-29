@@ -1,7 +1,9 @@
 import express, {Request, Response, NextFunction} from "express";
-import { getBuckets, addNewBucket } from "../models/Bucket";
+import { getBuckets, addNewBucket, deleteBucket } from "../models/Bucket";
 import { Bucket } from "../models/Bucket";
 import { UserModel } from "../models/User";
+import { Types } from "mongoose";
+
 import { BucketModel } from "../models/Bucket";
 import { getUserBySessionToken } from "../models/User";
 import { getBucketDetail_d } from "../dao/bucket";
@@ -103,3 +105,52 @@ export const getBucketDetail_c = async (req:Request, res: Response, next: NextFu
         })
     }
 }
+
+export const getBucketUserList = async (req: Request, res: Response) => {
+    const { bucketId } = req.params;
+
+    try {
+        const result = await BucketModel.findById({_id: bucketId}).populate('maker').exec();
+        if (!result) {
+            return res.status(404).send('Bucket not found');
+        }
+        res.json(result);
+
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).send('Internal Server Error');
+    }
+};
+
+export const getUserBuckets = async (req: Request, res: Response) => {
+
+    // console.log(req.body);
+    // const token = req.cookies["AUTH-TOKEN"];
+    // if (!token) {
+    //   throw Error("no token");
+    // }
+    // const user = await getUserBySessionToken(token);
+    //유저의 버킷리스트 불러오는 로직 추가
+    try {
+        const result = await getBuckets();
+        res.json(result);
+    } catch (error) {
+        console.error("버킷을 가져오는 중 오류 발생:");
+        res.status(500).send("서버 내부 오류");
+    }
+}
+
+
+export const removeBucket = async (req: Request, res: Response, next: NextFunction) => {
+    const bucketId = req.params.bucketId; // Extract bucketId from request parameters
+    try {
+        if (!Types.ObjectId.isValid(bucketId)) {
+            return res.status(400).json({ message: "Invalid bucket ID" });
+        }
+        const result = await deleteBucket(new Types.ObjectId(bucketId));
+        return res.json(result);
+    } catch (error) {
+        console.error("Error deleting bucket:", error);
+        return res.status(500).json({ message: "서버 에러" });
+    }
+};
