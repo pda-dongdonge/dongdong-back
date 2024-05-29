@@ -1,11 +1,11 @@
-import express, { Request, Response } from "express";
+import { createUserProfile } from "./../models/UserProfile";
+import { Request, Response } from "express";
 import {
   createUser,
   getUserByEmail,
   getUserBySessionToken,
 } from "../models/User";
 import bcrypt from "bcrypt";
-import { authenticate } from "../utils/auth";
 
 const tokenMaxAge = 60 * 60 * 24 * 3;
 export const register = async (req: Request, res: Response) => {
@@ -29,6 +29,13 @@ export const register = async (req: Request, res: Response) => {
       authentication: {
         password: hashedPassword,
       },
+    });
+    const userProfile = await createUserProfile({
+      userId: user._id,
+      followers: [],
+      following: [],
+      likedBucket: [],
+      username: user.username,
     });
     return res.status(200).json(user);
   } catch (error) {

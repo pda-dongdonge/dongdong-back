@@ -13,7 +13,7 @@ const bucketSchema = new Schema({
     maker: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: "UserProfile",
+        ref: "user",
     },
     bucketItemList: {
         type: [mongoose.Schema.Types.ObjectId],
@@ -23,7 +23,7 @@ const bucketSchema = new Schema({
     likeUser: {
         type: [mongoose.Schema.Types.ObjectId],
         default: [],
-        ref: "UserProfile",
+        ref: "user",
     }
 });
 
@@ -36,9 +36,20 @@ export interface Bucket {
 }
 
 
-export const BucketModel = mongoose.model("bucket", bucketSchema);
+export const BucketModel = mongoose.model("Bucket", bucketSchema);
 
-export const getBuckets = () => BucketModel.find();
+export const getBuckets = async () => {
+    try {
+        const buckets = await BucketModel.find()
+        .populate('maker','username')
+        .populate('bucketItemList','imgUrl').exec();
+        console.log(buckets);
+        return buckets;
+    } catch (error) {
+        console.error("Error fetching buckets:", error);
+        throw error;
+    }
+};
 
 export const addNewBucket = async (bucket: Bucket) => {
     const newBucket = new BucketModel({

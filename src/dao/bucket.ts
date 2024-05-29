@@ -13,7 +13,11 @@ export const getBucketDetail_d = async (bucketId:string) => {
         .select('-__v')
         .populate({
             path: 'bucketItemList',
-            select: '-__v'  // 각 bucketItem의 __v 필드를 제외
+            select: '-__v',  // 각 bucketItem의 __v 필드를 제외
+        })
+        .populate({
+            path: 'maker',
+            select: '_id username'
         })
         .lean<Bucket>();
 
