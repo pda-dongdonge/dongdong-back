@@ -44,7 +44,9 @@ export const addNewBucket_c = async (req: Request, res: Response, next: NextFunc
 
 export const getBucket = async (req: Request, res: Response) => {
     try {
-        const result = await BucketModel.find().populate('maker','username').exec();
+        const result = await BucketModel.find()
+        .populate('maker','username')
+        .populate('bucketItemList','imgUrl').exec();
         res.json(result);
         
     } catch (error) {

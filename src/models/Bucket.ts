@@ -39,7 +39,9 @@ export const BucketModel = mongoose.model("Bucket", bucketSchema);
 
 export const getBuckets = async () => {
     try {
-        const buckets = await BucketModel.find();
+        const buckets = await BucketModel.find()
+        .populate('maker','username')
+        .populate('bucketItemList','imgUrl').exec();
         console.log(buckets);
         return buckets;
     } catch (error) {
