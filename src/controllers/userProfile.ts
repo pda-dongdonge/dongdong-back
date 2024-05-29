@@ -120,7 +120,7 @@ export const getUserLikeBucketList = async (req: Request, res: Response) => {
     );
 
     if (validBucketDetails.length === 0) {
-      return res.status(404).send("No buckets found");
+      return res.status(200).send([]);
     }
 
     res.json(validBucketDetails);

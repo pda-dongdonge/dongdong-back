@@ -37,7 +37,10 @@ export interface Bucket {
 }
 
 export const getBucketListByMaker = (maker: string) =>
-  BucketModel.find({ maker });
+  BucketModel.find({ maker })
+    .populate("maker", "username")
+    .populate("bucketItemList", "imgUrl")
+    .exec();
 
 export const BucketModel = mongoose.model("Bucket", bucketSchema);
 
