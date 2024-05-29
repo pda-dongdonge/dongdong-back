@@ -7,12 +7,12 @@ const bucketItemSchema = new Schema({
     urlTitle: {
         type: String,
         required: [true, "영상의 제목을 입력해주세요"],
-        maxlength:[50, "50자 이내로 입력해 주세요"]
+        maxlength:[10000, "50자 이내로 입력해 주세요"]
     },
     urlContent: {
         type: String,
         required: [true, "영상의 정보를 입력해 주세요."],
-        maxlength:[100, "100자 이내로 입력해 주세요."]
+        maxlength:[10000, "100자 이내로 입력해 주세요."]
     },
     imgUrl: {
         type: String,
@@ -41,6 +41,7 @@ export const addNewBucketItem = async (bucketItem: BucketItem) => {
     });
     try {
         const savedBucketItem = await newBucketItem.save();
+        console.log("여기?");
         return savedBucketItem;
     } catch (error){////                                                                                 rror) {
         console.error("Error creating bucket:", error);
