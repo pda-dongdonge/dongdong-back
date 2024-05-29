@@ -80,7 +80,10 @@ export const getBucketListsByFollowingUserIds = async (
   try {
     const bucketLists = await BucketModel.find({
       maker: { $in: followingUserIds },
-    });
+      })
+      .populate("maker", "username")
+      .populate("bucketItemList", "imgUrl")
+      .exec();
     return bucketLists;
   } catch (error) {
     console.error(
