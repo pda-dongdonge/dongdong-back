@@ -37,6 +37,25 @@ export const register = async (req: Request, res: Response) => {
       likedBucket: [],
       username: user.username,
     });
+
+    const newUser = await getUserByEmail(email).select(
+      "+authentication.password"
+    );
+    if (!newUser?.authentication) throw Error("cant find user");
+
+    newUser.authentication.sessionToken = await bcrypt.hash(
+      newUser._id.toString(),
+      salt
+    );
+    await newUser.save();
+
+    res.cookie("AUTH-TOKEN", newUser.authentication.sessionToken, {
+      httpOnly: true,
+      maxAge: tokenMaxAge * 1000,
+      secure: false,
+      sameSite: false,
+    });
+
     return res.status(200).json(user);
   } catch (error) {
     console.log("register error", error);
@@ -65,14 +84,12 @@ export const login = async (req: Request, res: Response) => {
       return res.sendStatus(400);
     }
     const user = await getUserByEmail(email).select("+authentication.password");
-    console.log("user:", user);
     if (!user) {
       return res.sendStatus(400);
     }
     if (!user.authentication) {
       throw new Error("User authentication not found");
     }
-    console.log("pw:", user.authentication);
     const isMatch = await bcrypt.compare(
       password,
       user.authentication.password
