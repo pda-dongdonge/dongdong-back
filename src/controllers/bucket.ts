@@ -278,3 +278,35 @@ export const bucketLike_c = async (req: Request, res: Response, next: NextFuncti
     }
     // return res.send("test");
 }
+
+export const isBucketLiked_c = async (req: Request, res: Response, next: NextFunction) => {
+  const {bucketId} = req.body;
+  
+  if(!bucketId) {
+    return res.status(400).json({
+        message: "bucket Id를 입력해 주세요."
+    });
+  }
+
+  // 요청할 때 받은 userToken으로 user 정보 받기
+  const token = req.cookies["AUTH-TOKEN"];
+  if(!token) {
+  //    throw Error("no token");
+      return res.status(403).json({
+          message: "로그인이 필요한 기능입니다."
+      });
+  }
+
+  const user = await getUserBySessionToken(token);
+  if (!user) {
+      // throw Error("no token");
+      return res.status(403).json({
+          message: "등록되지 않은 유저입니다."
+      });
+  }
+
+  const isLiked = await checkLiked(bucketId, user._id);
+  return res.status(200).json({
+    isLiked: isLiked
+  });
+}

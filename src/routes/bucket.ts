@@ -10,6 +10,7 @@ import {
   getUserBuckets,
   removeBucket,
   bucketLike_c,
+  isBucketLiked_c
 } from "../controllers/bucket";
 
 export default (router: Router) => {
@@ -22,5 +23,6 @@ export default (router: Router) => {
   router.get("/bucket/detail/:bucketId", getBucketDetail_c);
   router.get("/bucket/user", getUserBuckets);
   router.delete("/bucket/user", removeBucket);
-  router.patch("/bucket/like", bucketLike_c)
+  router.patch("/bucket/like", bucketLike_c);
+  router.get("/bucket/isLiked", isBucketLiked_c);
 };
