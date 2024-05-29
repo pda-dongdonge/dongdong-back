@@ -1,10 +1,12 @@
-import {
-  updateUserProfileById,
-  getUserProfileById,
-} from "./../models/UserProfile";
 import { Request, Response } from "express";
 import { getUserById, getUserBySessionToken } from "../models/User";
 
+import {
+  UserProfileModel,
+  getUserProfileById,
+  updateUserProfileById,
+} from "../models/UserProfile";
+import { BucketModel } from "../models/Bucket";
 //유저 아이디 받아서 해당 유저 정보 노출 isFollow: true / false (비로그인유저는 false)
 export const getUserProfile = async (req: Request, res: Response) => {
   try {
@@ -92,5 +94,36 @@ export const follow = async (req: Request, res: Response) => {
   } catch (err) {
     console.log("follow err", err);
     return res.status(400).json(err);
+  }
+};
+export const getUserLikeBucketList = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const userProfile = await getUserProfileById(userId);
+    if (!userProfile) throw new Error(`no user ${userId}`);
+
+    const token = req.cookies["AUTH-TOKEN"];
+
+    const likedBucketIds = userProfile.likedBucket;
+
+    const bucketDetailsPromises = likedBucketIds.map((bucketId) =>
+      BucketModel.findById(bucketId).populate("maker").exec()
+    );
+
+    const bucketDetails = await Promise.all(bucketDetailsPromises);
+
+    // Filter out null results in case some buckets are not found
+    const validBucketDetails = bucketDetails.filter(
+      (bucket) => bucket !== null
+    );
+
+    if (validBucketDetails.length === 0) {
+      return res.status(404).send("No buckets found");
+    }
+
+    res.json(validBucketDetails);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).send("Internal Server Error");
   }
 };
