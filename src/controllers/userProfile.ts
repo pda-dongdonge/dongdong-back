@@ -96,6 +96,8 @@ export const follow = async (req: Request, res: Response) => {
     return res.status(400).json(err);
   }
 };
+
+//해당 유저가 좋아요한 버킷
 export const getUserLikeBucketList = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
