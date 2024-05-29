@@ -24,5 +24,5 @@ export default (router: Router) => {
   router.get("/bucket/user", getUserBuckets);
   router.delete("/bucket/user", removeBucket);
   router.patch("/bucket/like", bucketLike_c);
-  router.get("/bucket/isLiked", isBucketLiked_c);
+  router.post("/bucket/isLiked", isBucketLiked_c);
 };
