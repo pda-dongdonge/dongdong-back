@@ -21,4 +21,5 @@ export default (router: Router) => {
   router.get("/bucket/detail/:bucketId", getBucketDetail_c);
   router.get("/bucket/user", getUserBuckets);
   router.delete("/bucket/user", removeBucket);
+
 };
