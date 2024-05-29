@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import mongoose, { Document, Schema, Model } from "mongoose";
 
 const userSchema = new Schema({
@@ -7,14 +8,12 @@ const userSchema = new Schema({
     required: true,
   },
   followers: {
-    type: [mongoose.Schema.Types.ObjectId],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
     required: true,
-    ref: "user",
   },
   following: {
-    type: [mongoose.Schema.Types.ObjectId],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
     required: true,
-    ref: "user",
   },
   likedBucket: {
     type: [mongoose.Schema.Types.ObjectId],
@@ -42,6 +41,11 @@ export const createUserProfile = (values: Record<string, any>) =>
 export const deleteUserById = (userId: string) =>
   UserProfileModel.findOneAndDelete({ userId: userId });
 export const updateUserProfileById = (
-  userId: string,
+  _id: ObjectId,
   values: Record<string, any>
-) => UserProfileModel.findByIdAndUpdate(userId, values);
+) => {
+  return UserProfileModel.findByIdAndUpdate(_id, values, {
+    new: true,
+    useFindAndModify: false,
+  });
+};
