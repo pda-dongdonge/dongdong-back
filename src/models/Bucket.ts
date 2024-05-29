@@ -1,5 +1,7 @@
 import mongoose, { Schema, Types } from "mongoose";
 import { ObjectId } from "mongodb";
+import { convertToObject } from "typescript";
+
 const bucketSchema = new Schema({
   title: {
     type: String,
@@ -34,11 +36,25 @@ export interface Bucket {
   likeUser: Types.ObjectId[];
 }
 
-export const BucketModel = mongoose.model("bucket", bucketSchema);
-
-export const getBuckets = () => BucketModel.find();
 export const getBucketListByMaker = (maker: string) =>
   BucketModel.find({ maker });
+
+export const BucketModel = mongoose.model("Bucket", bucketSchema);
+
+export const getBuckets = async () => {
+  try {
+    const buckets = await BucketModel.find()
+      .populate("maker", "username")
+      .populate("bucketItemList", "imgUrl")
+      .exec();
+    console.log(buckets);
+    return buckets;
+  } catch (error) {
+    console.error("Error fetching buckets:", error);
+    throw error;
+  }
+};
+
 export const addNewBucket = async (bucket: Bucket) => {
   const newBucket = new BucketModel({
     title: bucket.title,
@@ -69,5 +85,18 @@ export const getBucketListsByFollowingUserIds = async (
       error
     );
     return []; // 에러 발생 시 빈 배열 반환
+  }
+};
+
+export const deleteBucket = async (bucketId: Types.ObjectId) => {
+  try {
+    const deletedBucket = await BucketModel.findByIdAndDelete(bucketId);
+    if (!deletedBucket) {
+      throw new Error("Bucket not found");
+    }
+    return deletedBucket;
+  } catch (error) {
+    console.log("Error removing bucket:", error);
+    throw error;
   }
 };
