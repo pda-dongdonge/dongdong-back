@@ -16,32 +16,48 @@ export const addURLBucketItem_c = async (req: Request, res: Response, next: Next
   const { url, urlTitle, urlContent, imgUrl } = req.body;
   const { bucketId } = req.params;
   console.log(bucketId);
-
-  try {
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      return res.status(400).json({ message: "잘못된 URL 형식입니다." });
+  const validUrl = require('valid-url');
+  // Check if the bucket exists
+    const bucket = await BucketModel.findById(bucketId);
+    if (!bucket) {
+      return res.status(404).json({ message: "버킷을 찾을 수 없습니다." });
     }
+  try {
+
+
+    //url형식 이상할 때
+    if (!validUrl.isWebUri(url))  {
+     /* const newBucketItem = {
+        url: url,
+        urlTitle: "제목",
+        urlContent: urlContent,
+        imgUrl:  "https://ifh.cc/g/8f9xoV.jpg",
+      };
+      
+      console.log(newBucketItem);
+      const result = await addNewBucketItem(newBucketItem);
+      bucket.bucketItemList.push(result._id);
+      await bucket.save();
+  */
+     // return res.json(result);
+      return res.status(500).json({ message: "잘못된 URL 형식입니다." });
+    }
+
+    //url 문제 없을 때
     const response = await axios.get(url);
     const html = response.data;
     const $ = cheerio.load(html);
-    console.log("jo")
 
     // Extract the title and image URL
     const extractedTitle = $('meta[name="title"]').attr('content') || $('title').text();
     const extractedImgUrl = $('meta[property="og:image"]').attr('content') || $('img').first().attr('src');
 
-    // Check if the bucket exists
-    const bucket = await BucketModel.findById(bucketId);
-    if (!bucket) {
-      return res.status(404).json({ message: "버킷을 찾을 수 없습니다." });
-    }
-
     // Create new bucket item
     const newBucketItem = {
       url: url,
-      urlTitle: extractedTitle || urlTitle,
+      urlTitle: extractedTitle || "제목",
       urlContent: urlContent,
-      imgUrl: extractedImgUrl || imgUrl,
+      imgUrl: extractedImgUrl || "https://ifh.cc/g/8f9xoV.jpg",
     };
     
     console.log(newBucketItem);
@@ -51,7 +67,20 @@ export const addURLBucketItem_c = async (req: Request, res: Response, next: Next
 
     return res.json(result);
   } catch (error) {
-    if (axios.isAxiosError(error)) {
+    const newBucketItem = {
+      url: url,
+      urlTitle: "제목",
+      urlContent: urlContent,
+      imgUrl:  "https://ifh.cc/g/8f9xoV.jpg",
+    };
+    
+    console.log(newBucketItem);
+    const result = await addNewBucketItem(newBucketItem);
+    bucket.bucketItemList.push(result._id);
+    await bucket.save();
+
+    return res.json(result);
+    /*if (axios.isAxiosError(error)) {
       // Axios-specific error handling
       console.error("Axios error occurred:", error.message);
       if (error.response) {
@@ -71,7 +100,7 @@ export const addURLBucketItem_c = async (req: Request, res: Response, next: Next
       // Non-Axios error
       console.error("Non-Axios error occurred:", error);
       return res.status(500).json({ message: "서버 에러가 발생했습니다." });
-    }
+    }*/
   }
 };
 export const addNewBucketItem_c = async (req: Request, res: Response, next: NextFunction) => {
