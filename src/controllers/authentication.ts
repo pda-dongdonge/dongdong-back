@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import {
   createUser,
   getUserByEmail,
+  getUserById,
   getUserBySessionToken,
 } from "../models/User";
 import bcrypt from "bcrypt";
@@ -49,6 +50,7 @@ export const register = async (req: Request, res: Response) => {
     );
     await newUser.save();
 
+    req.session.user = { id: newUser._id.toString() };
     res.cookie("AUTH-TOKEN", newUser.authentication.sessionToken, {
       httpOnly: true,
       maxAge: tokenMaxAge * 1000,
@@ -104,7 +106,7 @@ export const login = async (req: Request, res: Response) => {
       salt
     );
     await user.save();
-
+    req.session.user = { id: user._id.toString() };
     res.cookie("AUTH-TOKEN", user.authentication.sessionToken, {
       httpOnly: true,
       maxAge: tokenMaxAge * 1000,
@@ -124,14 +126,20 @@ export const isLogin = async (req: Request, res: Response) => {
     //AUTH-TOKEN 쿠키를 확인하고 없으면 fail
     //있으면  getUserBySessionToken 으로 유저 찾아 정보보내주기
     const token = req.cookies["AUTH-TOKEN"];
-    if (!token) {
-      throw Error("no token");
+    if (token) {
+      const user = await getUserBySessionToken(token);
+      if (!user) throw Error("no token");
+      return res.status(200).json(user);
     }
-    const user = await getUserBySessionToken(token);
-    if (!user) {
-      throw Error("no token");
+
+    if (req.session.user) {
+      console.log(`Hello, ${req.session.user.id}`);
+      const user = await getUserById(req.session.user.id);
+      if (!user) throw Error("no session");
+      return res.status(200).json(user);
     }
-    return res.status(200).json(user);
+
+    res.sendStatus(400);
   } catch (error) {
     console.log(error);
     return res.sendStatus(400);
@@ -145,6 +153,11 @@ export const logout = async (req: Request, res: Response) => {
       maxAge: tokenMaxAge * 1000,
       secure: false,
       sameSite: false,
+    });
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).send("Logout failed");
+      }
     });
     res.status(204).json({ state: "Success" });
   } catch (err) {

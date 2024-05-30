@@ -7,14 +7,19 @@ import {
   getBucketListsByFollowingUserIds,
   deleteBucket,
 } from "../models/Bucket";
-import { UserModel, getUserBySessionToken } from "../models/User";
+import { UserModel, getUserById, getUserBySessionToken } from "../models/User";
 import {
   getUserProfileById,
   updateUserProfileById,
 } from "../models/UserProfile";
 import { Bucket } from "../models/Bucket";
 import { Types } from "mongoose";
-import { getBucketDetail_d, bucketLike_d, checkLiked, deleteLiked } from "../dao/bucket";
+import {
+  getBucketDetail_d,
+  bucketLike_d,
+  checkLiked,
+  deleteLiked,
+} from "../dao/bucket";
 
 export const healthCheck = (req: Request, res: Response) => {
   return res.send("healthy");
@@ -27,10 +32,16 @@ export const addNewBucket_c = async (
 ) => {
   console.log(req.body);
   const token = req.cookies["AUTH-TOKEN"];
-  if (!token) {
-    throw Error("no token");
+  let user;
+  if (token) {
+    user = await getUserBySessionToken(token);
+    if (!user) throw Error("no token");
+  } else if (req.session.user) {
+    console.log(`Hello, ${req.session.user.id}`);
+    user = await getUserById(req.session.user.id);
+    if (!user) throw Error("no session");
   }
-  const user = await getUserBySessionToken(token);
+
   const { title, contents } = req.body;
   if (!title || !contents) {
     res.sendStatus(400).json({
@@ -64,9 +75,9 @@ export const getBucket = async (req: Request, res: Response) => {
       .populate("bucketItemList", "imgUrl")
       .exec();
 
-      result.forEach((doc) => {
-        doc.__v = doc.likeUser.length;
-      });
+    result.forEach((doc) => {
+      doc.__v = doc.likeUser.length;
+    });
 
     res.json(result);
   } catch (error) {
@@ -241,82 +252,101 @@ export const removeBucket = async (
   }
 };
 
-export const bucketLike_c = async (req: Request, res: Response, next: NextFunction) => {
-    console.log(req.body);
+export const bucketLike_c = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  console.log(req.body);
 
-    const {bucketId} = req.body;
-    if(!bucketId) {
-        return res.status(400).json({
-            message: "bucket Id를 입력해 주세요."
-        });
-    }
-
-    // 요청할 때 받은 userToken으로 user 정보 받기
-    const token = req.cookies["AUTH-TOKEN"];
-    if(!token) {
-    //    throw Error("no token");
-        return res.status(403).json({
-            message: "로그인이 필요한 기능입니다."
-        });
-    }
-
-    const user = await getUserBySessionToken(token);
-    if (!user) {
-        // throw Error("no token");
-        return res.status(403).json({
-            message: "등록되지 않은 유저입니다."
-        });
-    }
-
-    const isLiked = await checkLiked(bucketId, user._id);
-    console.log('isLinked', isLiked);
-    
-    //이미 좋아요 한 경우 체크 -> 삭제
-    if(isLiked) {
-        // console.log(true);
-        await deleteLiked(bucketId, user._id);
-        return res.status(200).json({
-            message: "좋아요 삭제되었습니다."
-        })
-    }
-    else {
-        //좋아요 안한 경우 -> 추가
-        await bucketLike_d(bucketId, user._id);
-        return res.status(200).json({
-            message: "좋아요 추가되었습니다."
-        })
-    }
-    // return res.send("test");
-}
-
-export const isBucketLiked_c = async (req: Request, res: Response, next: NextFunction) => {
-  const {bucketId} = req.body;
-  
-  if(!bucketId) {
+  const { bucketId } = req.body;
+  if (!bucketId) {
     return res.status(400).json({
-        message: "bucket Id를 입력해 주세요."
+      message: "bucket Id를 입력해 주세요.",
     });
   }
 
   // 요청할 때 받은 userToken으로 user 정보 받기
   const token = req.cookies["AUTH-TOKEN"];
-  if(!token) {
-  //    throw Error("no token");
-      return res.status(403).json({
-          message: "로그인이 필요한 기능입니다."
-      });
+  let user;
+  if (token) {
+    user = await getUserBySessionToken(token);
+    if (!user) throw Error("no token");
+  } else if (req.session.user) {
+    console.log(`Hello, ${req.session.user.id}`);
+    user = await getUserById(req.session.user.id);
+    if (!user) throw Error("no session");
+  } else {
+    return res.status(403).json({
+      message: "로그인이 필요한 기능입니다.",
+    });
   }
 
-  const user = await getUserBySessionToken(token);
   if (!user) {
-      // throw Error("no token");
-      return res.status(403).json({
-          message: "등록되지 않은 유저입니다."
-      });
+    // throw Error("no token");
+    return res.status(403).json({
+      message: "등록되지 않은 유저입니다.",
+    });
+  }
+
+  const isLiked = await checkLiked(bucketId, user._id);
+  console.log("isLinked", isLiked);
+
+  //이미 좋아요 한 경우 체크 -> 삭제
+  if (isLiked) {
+    // console.log(true);
+    await deleteLiked(bucketId, user._id);
+    return res.status(200).json({
+      message: "좋아요 삭제되었습니다.",
+    });
+  } else {
+    //좋아요 안한 경우 -> 추가
+    await bucketLike_d(bucketId, user._id);
+    return res.status(200).json({
+      message: "좋아요 추가되었습니다.",
+    });
+  }
+  // return res.send("test");
+};
+
+export const isBucketLiked_c = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { bucketId } = req.body;
+
+  if (!bucketId) {
+    return res.status(400).json({
+      message: "bucket Id를 입력해 주세요.",
+    });
+  }
+
+  // 요청할 때 받은 userToken으로 user 정보 받기
+  const token = req.cookies["AUTH-TOKEN"];
+  let user;
+  if (token) {
+    user = await getUserBySessionToken(token);
+    if (!user) throw Error("no token");
+  } else if (req.session.user) {
+    console.log(`Hello, ${req.session.user.id}`);
+    user = await getUserById(req.session.user.id);
+    if (!user) throw Error("no session");
+  } else {
+    return res.status(403).json({
+      message: "로그인이 필요한 기능입니다.",
+    });
+  }
+
+  if (!user) {
+    // throw Error("no token");
+    return res.status(403).json({
+      message: "등록되지 않은 유저입니다.",
+    });
   }
 
   const isLiked = await checkLiked(bucketId, user._id);
   return res.status(200).json({
-    isLiked: isLiked
+    isLiked: isLiked,
   });
-}
+};

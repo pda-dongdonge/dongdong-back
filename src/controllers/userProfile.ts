@@ -13,13 +13,33 @@ export const getUserProfile = async (req: Request, res: Response) => {
     const { userId } = req.params;
     const userProfile = await getUserProfileById(userId);
     if (!userProfile) throw new Error(`no user ${userId}`);
-
-    const token = req.cookies["AUTH-TOKEN"];
     let isFollow = false;
+
+    // 요청할 때 받은 userToken으로 user 정보 받기
+    const token = req.cookies["AUTH-TOKEN"];
+    let user;
     if (token) {
-      const loginUser = await getUserBySessionToken(token);
-      isFollow =
-        (loginUser && userProfile.followers.includes(loginUser._id)) || false;
+      user = await getUserBySessionToken(token);
+      if (!user) throw Error("no token");
+    } else if (req.session.user) {
+      console.log(`Hello, ${req.session.user.id}`);
+      user = await getUserById(req.session.user.id);
+      if (!user) throw Error("no session");
+    } else {
+      return res.status(403).json({
+        message: "로그인이 필요한 기능입니다.",
+      });
+    }
+
+    if (!user) {
+      // throw Error("no token");
+      return res.status(403).json({
+        message: "등록되지 않은 유저입니다.",
+      });
+    }
+
+    if (user) {
+      isFollow = (user && userProfile.followers.includes(user._id)) || false;
     }
 
     const response = {
@@ -47,11 +67,22 @@ export const follow = async (req: Request, res: Response) => {
     const userProfile = await getUserProfileById(userId);
     if (!userProfile) throw new Error();
 
+    // 요청할 때 받은 userToken으로 user 정보 받기
     const token = req.cookies["AUTH-TOKEN"];
-    if (!token) {
-      throw new Error(`no token`);
+    let loginUser;
+    if (token) {
+      loginUser = await getUserBySessionToken(token);
+      if (!loginUser) throw Error("no token");
+    } else if (req.session.user) {
+      console.log(`Hello, ${req.session.user.id}`);
+      loginUser = await getUserById(req.session.user.id);
+      if (!loginUser) throw Error("no session");
+    } else {
+      return res.status(403).json({
+        message: "로그인이 필요한 기능입니다.",
+      });
     }
-    const loginUser = await getUserBySessionToken(token);
+
     if (!loginUser) {
       throw new Error(`no logined User`);
     }
@@ -103,8 +134,6 @@ export const getUserLikeBucketList = async (req: Request, res: Response) => {
     const { userId } = req.params;
     const userProfile = await getUserProfileById(userId);
     if (!userProfile) throw new Error(`no user ${userId}`);
-
-    const token = req.cookies["AUTH-TOKEN"];
 
     const likedBucketIds = userProfile.likedBucket;
 
