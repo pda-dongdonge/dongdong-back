@@ -6,17 +6,18 @@ const bucketItemSchema = new Schema({
     },
     urlTitle: {
         type: String,
-        required: [true, "영상의 제목을 입력해주세요"],
-        maxlength:[10000, "50자 이내로 입력해 주세요"]
+        // required: [true, "영상의 제목을 입력해주세요"],
+        maxlength:[10000],
+        default:"제목"
     },
     urlContent: {
         type: String,
         required: [true, "영상의 정보를 입력해 주세요."],
-        maxlength:[10000, "100자 이내로 입력해 주세요."]
+        maxlength:[10000]
     },
     imgUrl: {
         type: String,
-        default:""
+        default:"http://localhost:5173/tungtung.png"
     },
     
 });
@@ -34,19 +35,17 @@ export const getBucketItem= () => BucketItemModel.find();
 
 export const addNewBucketItem = async (bucketItem: BucketItem) => {
     const newBucketItem = new BucketItemModel({
-        url: bucketItem.url,
-        urlTitle: bucketItem.urlTitle,
-        urlContent: bucketItem.urlContent,
-        imgUrl: bucketItem.imgUrl            // Optional, initialize if not provided
+      url: bucketItem.url,
+      urlTitle: bucketItem.urlTitle,
+      urlContent: bucketItem.urlContent,
+      imgUrl: bucketItem.imgUrl // Optional, initialize if not provided
     });
+  
     try {
-        const savedBucketItem = await newBucketItem.save();
-        console.log("여기?");
-        return savedBucketItem;
-    } catch (error){////                                                                                 rror) {
-        console.error("Error creating bucket:", error);
-        throw error;
-
+      const savedBucketItem = await newBucketItem.save();
+      return savedBucketItem;
+    } catch (error) {
+      console.error("Error creating bucket:", error);
+      throw error;
     }
-}
-
+  };
