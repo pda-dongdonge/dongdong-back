@@ -109,7 +109,10 @@ export const getUserLikeBucketList = async (req: Request, res: Response) => {
     const likedBucketIds = userProfile.likedBucket;
 
     const bucketDetailsPromises = likedBucketIds.map((bucketId) =>
-      BucketModel.findById(bucketId).populate("maker").exec()
+      BucketModel.findById(bucketId)
+        .populate("maker", "username")
+        .populate("bucketItemList", "imgUrl")
+        .exec()
     );
 
     const bucketDetails = await Promise.all(bucketDetailsPromises);
