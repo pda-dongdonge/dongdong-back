@@ -63,6 +63,11 @@ export const getBucket = async (req: Request, res: Response) => {
       .populate("maker", "username")
       .populate("bucketItemList", "imgUrl")
       .exec();
+
+      result.forEach((doc) => {
+        doc.__v = doc.likeUser.length;
+      });
+
     res.json(result);
   } catch (error) {
     console.error("Error:", error);
@@ -107,7 +112,9 @@ export const getHotBucket = async (req: Request, res: Response) => {
       path: "maker",
       select: "username",
     });
-
+    populatedResult.forEach((doc) => {
+      doc.__v = doc.likeUser.length;
+    });
     res.json(populatedResult);
   } catch (error) {
     console.error("Error:", error);
@@ -189,6 +196,9 @@ export const getBucketListFollowing = async (req: Request, res: Response) => {
     const bucketList = await getBucketListsByFollowingUserIds(
       user.following.map(String)
     );
+    bucketList.forEach((doc) => {
+      doc.__v = doc.likeUser.length;
+    });
     res.json(bucketList);
   } catch (error) {
     console.error("Error:", error);
