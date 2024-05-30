@@ -22,7 +22,7 @@ export default (router: Router) => {
   router.get("/hotbucket", getHotBucket);
   router.get("/bucket/detail/:bucketId", getBucketDetail_c);
   router.get("/bucket/user", getUserBuckets);
-  router.delete("/bucket/user", removeBucket);
+  router.delete("/bucket/:bucketId", removeBucket);
   router.patch("/bucket/like", bucketLike_c);
   router.post("/bucket/isLiked", isBucketLiked_c);
 };

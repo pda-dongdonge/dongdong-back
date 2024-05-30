@@ -167,6 +167,7 @@ export const addBucketItemToBucket=async (req: Request, res: Response, next: Nex
   
           bucket.bucketItemList.push(bucketItem._id);
           await bucket.save();
+          return res.status(200).send("success");
 
   } catch (error) {
       console.error("Error creating bucket:", error);
